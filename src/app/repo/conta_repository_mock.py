@@ -1,6 +1,5 @@
 from typing import Dict, Optional, List
 
-from ..enums.item_type_enum import ItemTypeEnum
 from ..entities.conta_bancaria import ContaBancaria
 from .conta_repository_interface import IContaRepository
 
