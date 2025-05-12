@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
-
-from ..enums.item_type_enum import ItemTypeEnum
+from typing import List, Optional
 
 from ..entities.conta_bancaria import ContaBancaria
 

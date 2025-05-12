@@ -37,7 +37,7 @@ class Environments:
     @staticmethod
     def get_item_repo() -> IItemRepository:
         if Environments.get_envs().stage == STAGE.TEST:
-            from .repo.item_repository_mock import ItemRepositoryMock
+            from .repo.conta_repository_mock import ItemRepositoryMock
             return ItemRepositoryMock
         # use "elif" conditional to add other stages
         else:
