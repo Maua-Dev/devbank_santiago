@@ -4,7 +4,7 @@ import os
 
 from .errors.environment_errors import EnvironmentNotFound
 
-from .repo.conta_repository_interface import IItemRepository
+from .repo.conta_repository_interface import IContaRepository
 
 
 class STAGE(Enum):
@@ -35,10 +35,10 @@ class Environments:
         self.stage = STAGE[os.environ.get("STAGE")]
 
     @staticmethod
-    def get_item_repo() -> IItemRepository:
+    def get_conta_repo() -> IContaRepository:
         if Environments.get_envs().stage == STAGE.TEST:
-            from .repo.conta_repository_mock import ItemRepositoryMock
-            return ItemRepositoryMock
+            from .repo.conta_repository_mock import ContaRepositoryMock
+            return ContaRepositoryMock
         # use "elif" conditional to add other stages
         else:
             raise EnvironmentNotFound("STAGE")
