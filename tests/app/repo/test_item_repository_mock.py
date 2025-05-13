@@ -1,67 +1,76 @@
 import pytest
-from src.app.entities.item import Item
-from src.app.enums.item_type_enum import ItemTypeEnum
-from src.app.repo.conta_repository_mock import ItemRepositoryMock
+from src.app.entities.conta_bancaria import ContaBancaria
+from src.app.repo.conta_repository_mock import ContaRepositoryMock
 
-class Test_ItemRepositoryMock:
-    def test_get_all_items(self):
-        repo = ItemRepositoryMock()
-        assert all([item_expect == item for item_expect, item in zip(repo.items.values(), repo.get_all_items())]) 
+class Test_ContaRepositoryMock:
+    def test_get_all_contas(self):
+        repo = ContaRepositoryMock()
+        assert all([conta_expect == conta for conta_expect, conta in zip(repo.contas.values(), repo.get_all_contas())])
+
+    def test_get_conta(self):
+        repo = ContaRepositoryMock()
+        conta = repo.get_conta(numero_conta="101")
+        assert conta == repo.contas.get("101")
+
+    def test_get_conta_not_found(self):
+        repo = ContaRepositoryMock()
+        conta = repo.get_conta(numero_conta="999")
+        assert conta is None
         
-    def test_get_item(self):
-        repo = ItemRepositoryMock()
-        item = repo.get_item(item_id=1)
-        assert item == repo.items.get(1)
-    
-    def test_get_item_not_found(self):
-        repo = ItemRepositoryMock()
-        item = repo.get_item(item_id=10)
-        assert item is None
-        
-    def test_create_item(self):
-        repo = ItemRepositoryMock()
-        len_before = len(repo.items)
-        item = Item(name="test", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False)
-        repo.create_item(item=item, item_id=0)
-        len_after = len(repo.items)
+    def test_create_conta(self):
+        repo = ContaRepositoryMock()
+        len_before = len(repo.contas)
+        conta = ContaBancaria(nome="test", agencia="0001", numero_conta="101", saldo=1500.00)
+        repo.create_conta(conta=conta)
+        len_after = len(repo.contas)
         assert len_after == len_before + 1
-        assert repo.items.get(0) == item
+        assert repo.contas.get(0) == conta
         
-    def test_delete_item(self):
-        repo = ItemRepositoryMock()
-        item_expected_to_be_deleted = repo.items.get(1)
-        len_before = len(repo.items)
-        
-        item = repo.delete_item(item_id=1)
-        len_after = len(repo.items)
+    def test_delete_conta(self):
+        repo = ContaRepositoryMock()
+        conta_expected_to_be_deleted = repo.contas.get("101")
+        len_before = len(repo.contas)
+        conta = repo.delete_conta(numero_conta="101")
+        len_after = len(repo.contas)
         assert len_after == len_before - 1
-        assert item == item_expected_to_be_deleted
+        assert conta == conta_expected_to_be_deleted
         
-    def test_delete_item_not_found(self):
-        repo = ItemRepositoryMock()
-        item = repo.delete_item(item_id=10)
-        assert item is None
-        
-    def test_update_item(self):
-        repo = ItemRepositoryMock()
-        item = Item(name="test", price=1.0, item_type=ItemTypeEnum.TOY, admin_permission=False)
-        item_updated = repo.update_item(item_id=1, name=item.name, price=item.price, item_type=item.item_type, admin_permission=item.admin_permission)
-        
-        assert item_updated == item
-        assert repo.items.get(1) == item
-        
-    def test_update_item_partial_1(self):
-        repo = ItemRepositoryMock()
-        name = "test"
-        item_updated = repo.update_item(item_id=1, name=name)
-        
-        assert item_updated.name == name
-        assert repo.items.get(1).name == name
-        
-    def test_update_item_partial_2(self):
-        repo = ItemRepositoryMock()
-        price = 1.0
-        item_updated = repo.update_item(item_id=1, price=price)
-        
-        assert item_updated.price == price
-        assert repo.items.get(1).price == price
+    def test_delete_conta_not_found(self):
+        repo = ContaRepositoryMock()
+        conta = repo.delete_conta(numero_conta="999")
+        assert conta is None
+
+    def test_update_conta(self):
+        repo = ContaRepositoryMock()
+        nova_conta = ContaBancaria(nome="test", agencia="0001", numero_conta="101", saldo=1500.00)
+        conta_atualizada = repo.update_conta(
+            numero_conta="101", 
+            nome=nova_conta.nome, 
+            agencia=nova_conta.agencia, 
+            saldo=nova_conta.saldo
+        )
+
+        assert conta_atualizada == nova_conta
+        assert repo.contas.get("101") == nova_conta
+
+    def test_update_conta_partial_nome(self):
+        repo = ContaRepositoryMock()
+        nome = "Nome Partial"
+        conta_atualizada = repo.update_conta(
+            numero_conta="101",
+            nome=nome
+        )
+
+        assert conta_atualizada.nome == nome
+        assert repo.contas.get("101").nome == nome
+
+    def test_update_conta_partial_saldo(self):
+        repo = ContaRepositoryMock()
+        saldo = 2000.00
+        conta_atualizada = repo.update_conta(
+            numero_conta="101",
+            saldo=saldo
+        )
+
+        assert conta_atualizada.saldo == saldo
+        assert repo.contas.get("101").saldo == saldo
