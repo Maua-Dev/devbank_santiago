@@ -1,55 +1,69 @@
 import pytest
-from src.app.entities.item import Item
-from src.app.enums.item_type_enum import ItemTypeEnum
+from src.app.entities.conta_bancaria import ContaBancaria
 from src.app.errors.entity_errors import ParamNotValidated
 
 
-class Test_Item:
-    def test_item(self):
-        item = Item("test", 1.0, ItemTypeEnum.FOOD, admin_permission=True)
-        assert item.name == "test"
-        assert item.price == 1.0
-        assert item.item_type == ItemTypeEnum.FOOD
-        
-    def test_item_dict(self):
-        item = Item("test", 1.0, ItemTypeEnum.FOOD, admin_permission=True)
-        assert item.to_dict() == {'admin_permission': True, 'item_type': 'FOOD', 'name': 'test', 'price': 1.0}
-    
-    def test_item_name_is_none(self):
+class Test_ContaBancaria:
+    def test_conta_bancaria_valida(self):
+        conta = ContaBancaria(nome = "João Silva", agencia = "0001", numero_conta = "101", saldo = 1500.00)
+        assert conta.nome == "João Silva"
+        assert conta.agencia == "0001"
+        assert conta.numero_conta == "101"
+        assert conta.saldo == 1500.00
+
+    def test_conta_bancaria_to_dict(self):
+        conta = ContaBancaria(nome = "Maria Souza", agencia = "0002", numero_conta = "102", saldo = 2539.75)
+        assert conta.to_dict() == {
+            'nome': 'Maria Souza',
+            'agencia': '0002',
+            'numero_conta': '102',
+            'saldo': 2539.75
+        }
+
+    def test_nome_none(self):
         with pytest.raises(ParamNotValidated):
-            Item(price=1.0, item_type=ItemTypeEnum.FOOD, admin_permission=True)
+            ContaBancaria(nome=None, agencia="0001", numero_conta="101", saldo=1500.00)
             
-    def test_item_name_is_not_string(self):
+    def test_nome_nao_string(self):
         with pytest.raises(ParamNotValidated):
-            Item(name=1.0, price=1.0, item_type=ItemTypeEnum.FOOD, admin_permission=True)
+            ContaBancaria(nome=123, agencia="0001", numero_conta="101", saldo=1500.00)
             
-    def test_item_name_is_too_short(self):
+    def test_nome_muito_curto(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="te", price=1.0, item_type=ItemTypeEnum.FOOD, admin_permission=True)
+            ContaBancaria(nome="Jo", agencia="0001", numero_conta="101", saldo=1500.00)
             
-    def test_item_price_is_none(self):
+    def test_numero_conta_none(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", item_type=ItemTypeEnum.FOOD, admin_permission=True)
-            
-    def test_item_price_is_not_float(self):
+            ContaBancaria(nome="test", agencia="0001", numero_conta=None, saldo=1500.00)
+
+    def test_numero_conta_nao_string(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", price="1.0", item_type=ItemTypeEnum.FOOD, admin_permission=True)
-    def test_item_price_is_negative(self):
+            ContaBancaria(nome="test", agencia="0001", numero_conta=123, saldo=1500.00)
+
+    def test_numero_conta_com_tamanho_invalido(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", price=-1.0, item_type=ItemTypeEnum.FOOD, admin_permission=True)
-            
-    def test_item_type_is_none(self):
+            ContaBancaria(nome="test", agencia="0001", numero_conta="10", saldo=1500.00)
+
+    def test_saldo_none(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", price=1.0, admin_permission=True)
-            
-    def test_item_type_is_not_enum(self):
+            ContaBancaria(nome="test", agencia="0001", numero_conta="101", saldo=None)
+
+    def test_saldo_nao_float(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", price=1.0, item_type="FOOD", admin_permission=True)
-            
-    def test_item_admin_permission_is_none(self):
+            ContaBancaria(nome="test", agencia="0001", numero_conta="101", saldo="1500.00")
+
+    def test_saldo_negativo(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", price=1.0, item_type=ItemTypeEnum.FOOD)
-        
-    def test_item_admin_permission_is_not_bool(self):
+            ContaBancaria(nome="test", agencia="0001", numero_conta="101", saldo=-1500.00)
+
+    def test_agencia_none(self):
         with pytest.raises(ParamNotValidated):
-            Item(name="test", price=1.0, item_type=ItemTypeEnum.FOOD, admin_permission="True")
+            ContaBancaria(nome="test", agencia=None, numero_conta="101", saldo=1500.00)
+
+    def test_agencia_nao_string(self):
+        with pytest.raises(ParamNotValidated):
+            ContaBancaria(nome="test", agencia=123, numero_conta="101", saldo=1500.00)
+
+    def test_agencia_com_tamanho_invalido(self):
+        with pytest.raises(ParamNotValidated):
+            ContaBancaria(nome="test", agencia="00", numero_conta="101", saldo=1500.00)
