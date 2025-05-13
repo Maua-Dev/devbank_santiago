@@ -1,266 +1,283 @@
 from fastapi.exceptions import HTTPException
 import pytest
-from src.app.entities.item import Item
-from src.app.enums.item_type_enum import ItemTypeEnum
-from src.app.main import get_all_items, get_item, create_item, delete_item, update_item
-from src.app.repo.conta_repository_mock import ItemRepositoryMock
+from src.app.entities.conta_bancaria import ContaBancaria
+from src.app.main import get_all_contas, get_conta, create_conta, delete_conta, update_conta
+from src.app.repo.conta_repository_mock import ContaRepositoryMock
 
 class Test_Main:
-    def test_get_all_items(self):
-        repo = ItemRepositoryMock()
-        response = get_all_items()
-        assert all([item_expect.to_dict() == item for item_expect, item in zip(repo.items.values(), response.get("items"))]) 
-        
-    def test_get_item(self):
-        repo = ItemRepositoryMock()
-        item_id = 1
-        response = get_item(item_id=item_id)
+    def test_get_all_contas(self):
+        repo = ContaRepositoryMock()
+        response = get_all_contas()
+        assert all([conta_expect.to_dict() == conta for conta_expect, conta in zip(repo.contas.values(), response.get("contas"))])
+
+    def test_get_conta(self):
+        repo = ContaRepositoryMock()
+        numero_conta = "101"
+        response = get_conta(numero_conta=numero_conta)
         assert response == {
-            'item_id' : item_id,
-            'item': repo.items.get(item_id).to_dict()
+            'conta_id' : numero_conta,
+            'conta': repo.contas.get(numero_conta).to_dict()
         }
-        
-    def test_get_item_id_is_none(self):
-        
-        item_id = None
+
+    def test_get_conta_id_is_none(self):
+
+        numero_conta = None
         with pytest.raises(HTTPException) as err:
-            get_item(item_id=item_id)
+            get_conta(numero_conta=numero_conta)
+
+    def test_get_conta_id_is_not_int(self):
+        numero_conta = '1'
+        with pytest.raises(HTTPException) as err:
+            get_conta(numero_conta=numero_conta)
+
+    def test_get_conta_id_is_not_positive(self):
+        numero_conta = '-1'
+        with pytest.raises(HTTPException) as err:
+            get_conta(numero_conta=numero_conta)
+
+    def test_create_conta(self):
+        repo = ContaRepositoryMock()
+
+        body = {
+            'numero_conta': '101',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
+        }
+        response = create_conta(request=body)
+        assert response == {'conta_id': 0,'conta': {'nome': 'test', 'saldo': 1000.0, 'agencia': '0001'}}
+
+    def test_create_conta_conflict(self):
+        repo = ContaRepositoryMock()
+
+        body = {
+            'numero_conta': '101',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
+        }
+        response = create_conta(request=body)
+        assert response == {'numero_conta': '101','conta': {'nome': 'test', 'saldo': 1000.0, 'agencia': '0001'}}
+
+    def test_create_conta_conflict(self):
+        repo = ContaRepositoryMock()
+
+        body = {
+            'numero_conta': '101',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
+        }
+        response = create_conta(request=body)
+        assert response == {'numero_conta': '101','conta': {'nome': 'test', 'saldo': 1000.0, 'agencia': '0001'}}
+
+    def test_create_conta_conflict(self):
+        repo = ContaRepositoryMock()
+
+        body = {
+            'numero_conta': '101',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
+        }
+        with pytest.raises(HTTPException) as err:
+            create_conta(request=body)
     
-    def test_get_item_id_is_not_int(self):
-        item_id = '1'
-        with pytest.raises(HTTPException) as err:
-            get_item(item_id=item_id)
-            
-    def test_get_item_id_is_not_positive(self):
-        item_id = -1
-        with pytest.raises(HTTPException) as err:
-            get_item(item_id=item_id)
-            
-    def test_create_item(self):
-        repo = ItemRepositoryMock()
-        
+    def test_create_conta_missing_id(self):
         body = {
-            'item_id': 0,
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 'TOY',
-            'admin_permission': False
-        }
-        response = create_item(request=body)
-        assert response == {'item_id': 0,'item': {'admin_permission': False, 'item_type': 'TOY', 'name': 'test', 'price': 1.0}}
-    
-    def test_create_item_conflict(self):
-        repo = ItemRepositoryMock()
-        
-        body = {
-            'item_id': 1,
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 'TOY',
-            'admin_permission': False
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-    
-    def test_create_item_missing_id(self):
+            create_conta(request=body)
+
+    def test_create_conta_id_is_not_int(self):
         body = {
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 'TOY',
-            'admin_permission': False
+            'numero_conta': '0',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-        
-    def test_create_item_id_is_not_int(self):
+            create_conta(request=body)
+
+    def test_create_numero_conta_is_not_positive(self):
         body = {
-            'item_id': '0',
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 'TOY',
-            'admin_permission': False
+            'numero_conta': '-1',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-    
-    def test_create_item_id_is_not_positive(self):
+            create_conta(request=body)
+
+    def test_create_agencia_missing_type(self):
         body = {
-            'item_id': -1,
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 'TOY',
-            'admin_permission': False
+            'numero_conta': '101',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-            
-    def test_create_item_missing_type(self):
+            create_conta(request=body)
+
+    def test_create_conta_id_is_not_string(self):
         body = {
-            'item_id': 1,
-            'name': 'test',
-            'price': 1.0,
-            'admin_permission': False
+            'numero_conta': 1,
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-            
-    def test_create_item_item_type_is_not_string(self):
+            create_conta(request=body)
+
+    def test_create_conta_agencia_is_not_valid(self):
         body = {
-            'item_id': 1,
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 1,
-            'admin_permission': False
+            'numero_conta': '101',
+            'nome': 'test',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-            
-    def test_create_item_item_type_is_not_valid(self):
+            create_conta(request=body)
+
+    def test_create_conta_param_not_validated(self):
         body = {
-            'item_id': 1,
-            'name': 'test',
-            'price': 1.0,
-            'item_type': 'test',
-            'admin_permission': False
+            'numero_conta': '101',
+            'nome': '',
+            'saldo': 1000.0,
+            'agencia': '0001',
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-            
-    def test_create_item_param_not_validated(self):
+            create_conta(request=body)
+
+    def test_delete_conta(self):
         body = {
-            'item_id': 1,
-            'name': '',
-            'price': 1.0,
-            'item_type': 'TOY',
-            'admin_permission': False,
+            "numero_conta": '101'
+        }
+        response = delete_conta(request=body)
+        assert response == {'numero_conta': '101', 'conta': {'nome': 'Barbie', 'saldo': 48.9, 'agencia': '0001'}}
+
+    def test_delete_conta_missing_id(self):
+        with pytest.raises(HTTPException) as err:
+            delete_conta(request={})
+
+    def test_delete_conta_id_is_not_int(self):
+        body = {
+            "numero_conta": '1'
         }
         with pytest.raises(HTTPException) as err:
-            create_item(request=body)
-            
-    def test_delete_item(self):
+            delete_conta(request=body)
+
+    def test_delete_conta_id_not_found(self):
         body = {
-            "item_id": 1
-        }
-        response = delete_item(request=body)
-        assert response == {'item_id': 1, 'item': {'name': 'Barbie', 'price': 48.9, 'item_type': 'TOY', 'admin_permission': False}}
-        
-    def test_delete_item_missing_id(self):
-        with pytest.raises(HTTPException) as err:
-            delete_item(request={})
-            
-    def test_delete_item_id_is_not_int(self):
-        body = {
-            "item_id": '1'
+            "numero_conta": '100'
         }
         with pytest.raises(HTTPException) as err:
-            delete_item(request=body)
-            
-    def test_delete_item_id_not_found(self):
+            delete_conta(request=body)
+
+    def test_delete_conta_id_not_positive(self):
         body = {
-            "item_id": 100
+            "numero_conta": '-100'
         }
         with pytest.raises(HTTPException) as err:
-            delete_item(request=body)
-            
-    def test_delete_item_id_not_positive(self):
+            delete_conta(request=body)
+
+    def test_delete_conta_id_not_found(self):
         body = {
-            "item_id": -100
+            "numero_conta": '4'
         }
         with pytest.raises(HTTPException) as err:
-            delete_item(request=body)
-            
-    def test_delete_item_without_admin_permission(self):
+            delete_conta(request=body)
+
+    def test_update_conta(self):
         body = {
-            "item_id": 4
+            "numero_conta": '101',
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
+        }
+        response = update_conta(request=body)
+        assert response == {'numero_conta': '101', 'conta': {'nome': 'test', 'saldo': 1000.0, 'agencia': '0001'}}
+
+    def test_update_conta_missing_id(self):
+        body = {
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            delete_item(request=body)
-            
-    def test_update_item(self):
+            update_conta(request=body)
+
+    def test_update_conta_id_is_not_int(self):
         body = {
-            "item_id": 2,
-            "name": "test",
-            "price": 1.0,
-            "item_type": "TOY",
-            "admin_permission": False
-        }
-        response = update_item(request=body)
-        assert response == {'item_id': 2, 'item': {'name': 'test', 'price': 1.0, 'item_type': 'TOY', 'admin_permission': False}}
-        
-    def test_update_item_missing_id(self):
-        body = {
-            "name": "test",
-            "price": 1.0,
-            "item_type": "TOY",
-            "admin_permission": False
+            "numero_conta": "1",
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
-    
-    def test_update_item_id_is_not_int(self):
+            update_conta(request=body)
+
+    def test_update_conta_not_positive(self):
         body = {
-            "item_id": "1",
-            "name": "test",
-            "price": 1.0,
-            "item_type": "TOY",
-            "admin_permission": False
+            "numero_conta": "1",
+            "nome": "test",
+            "saldo": -1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
-            
-    def test_update_item_not_positive(self):
+            update_conta(request=body)
+
+    def test_update_conta_not_positive(self):
         body = {
-            "item_id": -1,
-            "name": "test",
-            "price": 1.0,
-            "item_type": "test",
-            "admin_permission": False
+            "numero_conta": "1",
+            "nome": "test",
+            "saldo": -1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
-            
-    def test_update_item_not_found(self):
+            update_conta(request=body)
+
+    def test_update_conta_without_admin_permission(self):
         body = {
-            "item_id": 1,
-            "name": "test",
-            "price": 1.0,
-            "item_type": "test",
-            "admin_permission": False
+            "numero_conta": "4",
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
-            
-    def test_update_item_without_admin_permission(self):
+            update_conta(request=body)
+
+    def test_update_conta_without_admin_permission(self):
         body = {
-            "item_id": 4,
-            "name": "test",
-            "price": 1.0,
-            "item_type": "TOY",
-            "admin_permission": False
+            "numero_conta": "4",
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
-    
-    def test_update_item_type_not_string(self):
+            update_conta(request=body)
+
+    def test_update_conta_without_admin_permission(self):
         body = {
-            "item_id": 1,
-            "name": "test",
-            "price": 1.0,
-            "item_type": 1,
-            "admin_permission": False
+            "numero_conta": "4",
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
-            
-    def test_update_item_type_not_valid(self):
-        
+            update_conta(request=body)
+
+    def test_update_conta_type_not_valid(self):
+
         body = {
-            "item_id": 1,
-            "name": "test",
-            "price": 1.0,
-            "item_type": "test",
-            "admin_permission": False
+            "numero_conta": "4",
+            "nome": "test",
+            "saldo": 1000.0,
+            "agencia": "0001"
         }
         with pytest.raises(HTTPException) as err:
-            update_item(request=body)
+            update_conta(request=body)
             
